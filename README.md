@@ -78,3 +78,5 @@ Açık ağlarda (internet) sunucuya kurulacağı zaman aşağıdaki güvenlik ö
 | `anonymized.csv` | Kişisel bilgilerden arındırılmış veri seti |
 | `mapping.csv` | Orijinal değer, takma ad ve tekrar sayısı |
 | `summary.json` | Satır sayısı, benzersiz öğrenci sayısı, silinen sütunlar |
+<img src="csv.png" width="600" alt="csv">
+<img src="csv2.png" width="600" alt="csv">
