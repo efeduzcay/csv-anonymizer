@@ -11,6 +11,9 @@ Bu araç, öğrenci verilerini içeren CSV dosyalarındaki kimlik bilgilerini an
 - İsteğe bağlı eşleştirme dosyası (mapping.csv) üretimi
 - İşlem özeti (summary.json) çıktısı
 - 100.000 satırlık bloklar hâlinde işleme — büyük dosyalarda sabit bellek kullanımı
+<img src="csv.png" width="800" alt="csv">
+<img src="csv2.png" width="800" alt="csv">
+
 
 ## Proje Yapısı
 
@@ -78,5 +81,3 @@ Açık ağlarda (internet) sunucuya kurulacağı zaman aşağıdaki güvenlik ö
 | `anonymized.csv` | Kişisel bilgilerden arındırılmış veri seti |
 | `mapping.csv` | Orijinal değer, takma ad ve tekrar sayısı |
 | `summary.json` | Satır sayısı, benzersiz öğrenci sayısı, silinen sütunlar |
-<img src="csv.png" width="600" alt="csv">
-<img src="csv2.png" width="600" alt="csv">
