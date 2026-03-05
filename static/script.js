@@ -60,8 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchColumns(file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('api_key', 'change_this_secret_key_in_production'); // Security token
-
         try {
             const res = await fetch('/api/columns', { method: 'POST', body: formData });
             const data = await res.json();
@@ -129,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('name_columns', JSON.stringify(nameCols));
         formData.append('drop_columns', JSON.stringify(dropCols));
         formData.append('generate_mapping', generateMappingCb.checked);
-        formData.append('api_key', 'change_this_secret_key_in_production');
 
         try {
             const res = await fetch('/api/anonymize', { method: 'POST', body: formData });

@@ -2,33 +2,15 @@ import io
 import json
 import zipfile
 import os
-from fastapi import FastAPI, File, UploadFile, Form, Request, Depends, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-
 from anonymizer import parse_csv_bytes, find_default_columns, anonymize_dataframe
 
-# --- Security Config ---
-# 1. API Key Authentication
-API_KEY = os.getenv("ANONYMIZER_API_KEY", "change_this_secret_key_in_production")
-
-# 2. Rate Limiting Setup
-limiter = Limiter(key_func=get_remote_address)
-
-# 3. File Size Limit (2 GB max)
-MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024 
-
 app = FastAPI(title="CSV Anonimleştirici")
-
-# Register rate limiter
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,35 +25,15 @@ if not os.path.exists("static"):
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# --- Security Dependency ---
-def verify_api_key(api_key: str = Form(None), request: Request = None):
-    # In a real app you might use headers (X-API-Key), checking form data for ease of use in this simple web client
-    if not api_key:
-        api_key = request.headers.get("X-API-Key")
-        
-    if api_key != API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Geçersiz veya eksik API Anahtarı.",
-        )
-    return api_key
 
-# ── Routes ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def read_root():
     return FileResponse("static/index.html")
 
 
 @app.post("/api/columns")
-@limiter.limit("10/minute")  # Max 10 column fetch requests per minute per IP
-async def get_columns(
-    request: Request, 
-    file: UploadFile = File(...),
-    api_key: str = Depends(verify_api_key)
-):
-    # Enforce file size stream limit for columns parse (read only first chunk anyway)
-    file_bytes = await file.read(10 * 1024 * 1024) # Only read first 10MB to detect columns, protect RAM
-    
+async def get_columns(file: UploadFile = File(...)):
+    file_bytes = await file.read()
     try:
         df = parse_csv_bytes(file_bytes)
     except Exception as e:
@@ -86,23 +48,12 @@ async def get_columns(
 
 
 @app.post("/api/anonymize")
-@limiter.limit("5/minute")   # Max 5 heavy processing requests per minute per IP
 async def anonymize(
-    request: Request,
     file: UploadFile = File(...),
     name_columns: str = Form("[]"),
     drop_columns: str = Form("[]"),
     generate_mapping: bool = Form(True),
-    api_key: str = Depends(verify_api_key)
 ):
-    # Read file with size limit enforcement
-    file.file.seek(0, 2)
-    file_size = file.file.tell()
-    file.file.seek(0)
-    
-    if file_size > MAX_FILE_SIZE:
-        return JSONResponse(status_code=413, content={"error": "Dosya boyutu çok büyük. Maksimum 2GB yüklenebilir."})
-
     file_bytes = await file.read()
 
     try:
