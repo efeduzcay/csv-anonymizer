@@ -57,16 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchColumns(file);
     }
 
-    // Backend API URL (Change this when deploying the Python backend)
-    const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-        ? "http://127.0.0.1:8000"
-        : "http://127.0.0.1:8000"; // REPLACE WITH ACTUAL BACKEND URL LATER
-
     async function fetchColumns(file) {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/columns`, { method: 'POST', body: formData });
+            const res = await fetch('/api/columns', { method: 'POST', body: formData });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             allColumns = data.columns || [];
@@ -134,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('generate_mapping', generateMappingCb.checked);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/anonymize`, { method: 'POST', body: formData });
+            const res = await fetch('/api/anonymize', { method: 'POST', body: formData });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ error: "Sunucu hatası." }));
                 throw new Error(err.error || "Sunucu hatası.");
